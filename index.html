@@ -2,96 +2,178 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>放課後、願いはカセットに。</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>伝説の魔王城 - Legend of the Demon Castle</title>
+    <meta name="description" content="母の愛が試される幻想的なビジュアルノベルゲーム">
+    <meta name="theme-color" content="#1a0033">
+    
+    <!-- アイコン設定 -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    
+    <!-- CSS読み込み -->
+    <link rel="stylesheet" href="./style.css">
+    
+    <!-- PWA対応 -->
+    <link rel="manifest" href="./manifest.json">
 </head>
 <body>
     <!-- タイトル画面 -->
     <div id="titleScreen" class="screen active">
-        <div class="title-container">
-            <h1 class="main-title">放課後、願いはカセットに。</h1>
-            <p class="subtitle">～ 忘れられた記憶と、少女の声 ～</p>
-            <div class="title-buttons">
-                <button id="startBtn" class="title-btn">はじめから</button>
-                <button id="loadBtn" class="title-btn">つづきから</button>
-                <button id="configBtn" class="title-btn">設定</button>
-            </div>
-            <div class="credits">
-                <p>BGM: フリー音楽素材 H/MIX GALLERY</p>
-                <p>効果音: 効果音ラボ</p>
+        <div class="title-content">
+            <svg class="castle-bg" viewBox="0 0 800 600" role="img" aria-label="魔王城の夜景">
+                <defs>
+                    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1a0033;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                
+                <!-- 夜空 -->
+                <rect width="800" height="600" fill="url(#skyGradient)"/>
+                
+                <!-- 稲妻 -->
+                <path class="lightning" d="M200 50 L220 150 L200 150 L230 250" stroke="#ffffff" stroke-width="3" fill="none" opacity="0"/>
+                <path class="lightning" d="M600 80 L580 180 L600 180 L570 280" stroke="#ffffff" stroke-width="2" fill="none" opacity="0"/>
+                
+                <!-- 魔王城 -->
+                <polygon points="300,500 350,450 450,450 500,500 500,580 300,580" fill="#2d1b3d"/>
+                <polygon points="320,500 330,480 470,480 480,500" fill="#1a0f26"/>
+                <rect x="360" y="460" width="80" height="120" fill="#1a0f26"/>
+                <polygon points="360,460 400,420 440,460" fill="#0d0513"/>
+                
+                <!-- 窓（光る） -->
+                <rect x="380" y="480" width="15" height="20" fill="#ff6b6b" filter="url(#glow)"/>
+                <rect x="405" y="480" width="15" height="20" fill="#ff6b6b" filter="url(#glow)"/>
+                
+                <!-- 霧 -->
+                <ellipse cx="400" cy="570" rx="200" ry="30" fill="#ffffff" opacity="0.1" class="fog"/>
+            </svg>
+            
+            <div class="title-text">
+                <h1 class="game-title">伝説の魔王城</h1>
+                <p class="subtitle">Legend of the Demon Castle</p>
+                <button id="startBtn" class="start-button" type="button" aria-label="ゲームを開始する">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" fill="currentColor"/>
+                    </svg>
+                    始める
+                </button>
             </div>
         </div>
     </div>
 
     <!-- ゲーム画面 -->
     <div id="gameScreen" class="screen">
-        <!-- 背景画像 -->
-        <div id="backgroundContainer">
-            <img id="background" src="./assets/images/bg_classroom.jpg" alt="背景">
-            <div id="backgroundOverlay"></div>
+        <!-- 背景 -->
+        <div id="gameBackground" class="game-bg">
+            <svg class="scene-bg" viewBox="0 0 800 600" role="img" aria-label="ゲーム背景">
+                <rect width="800" height="600" fill="#2d1b3d"/>
+            </svg>
         </div>
-
-        <!-- テキストボックス -->
-        <div id="textContainer">
-            <div id="nameBox"></div>
-            <div id="textBox">
-                <p id="gameText"></p>
-                <div id="nextIndicator">▼</div>
+        
+        <!-- キャラクター立ち絵 -->
+        <div id="characterSprite" class="character-sprite">
+            <svg width="200" height="400" viewBox="0 0 200 400" role="img" aria-label="キャラクター">
+                <!-- セラ（主人公）の立ち絵 -->
+                <g id="sera">
+                    <!-- 体 -->
+                    <ellipse cx="100" cy="350" rx="40" ry="50" fill="#3d2f1f"/>
+                    <!-- 頭 -->
+                    <circle cx="100" cy="80" r="30" fill="#d4a574"/>
+                    <!-- 髪 -->
+                    <path d="M70 60 Q100 40 130 60 Q130 90 100 100 Q70 90 70 60" fill="#8b4513"/>
+                    <!-- 目 -->
+                    <circle cx="90" cy="75" r="3" fill="#2f4f4f"/>
+                    <circle cx="110" cy="75" r="3" fill="#2f4f4f"/>
+                    <!-- 傷跡 -->
+                    <path d="M115 70 L125 80" stroke="#8b0000" stroke-width="1"/>
+                    <!-- マント -->
+                    <path d="M60 120 Q100 110 140 120 L140 350 Q100 360 60 350 Z" fill="#2f1b3d"/>
+                </g>
+            </svg>
+        </div>
+        
+        <!-- テキストウィンドウ -->
+        <div id="textWindow" class="text-window">
+            <div id="speakerName" class="speaker-name" aria-label="話者名">セラ</div>
+            <div id="gameText" class="game-text" role="log" aria-live="polite" aria-label="ゲームテキスト">
+                息子を救うため、私は魔王城へと向かった...
             </div>
+            <button id="nextButton" class="next-button" type="button" aria-label="次へ進む">
+                <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                </svg>
+            </button>
         </div>
-
+        
         <!-- 選択肢 -->
-        <div id="choicesContainer"></div>
-
-        <!-- UI -->
-        <div id="gameUI">
-            <button id="menuBtn" class="ui-btn">メニュー</button>
-            <button id="autoBtn" class="ui-btn">オート</button>
-            <button id="skipBtn" class="ui-btn">スキップ</button>
-            <button id="saveBtn" class="ui-btn">セーブ</button>
+        <div id="choicesContainer" class="choices-container hidden" role="dialog" aria-label="選択肢">
+            <div class="choices-wrapper" role="group" aria-label="選択肢一覧">
+                <button class="choice-item" data-choice="0" type="button">選択肢1</button>
+                <button class="choice-item" data-choice="1" type="button">選択肢2</button>
+                <button class="choice-item" data-choice="2" type="button">選択肢3</button>
+            </div>
         </div>
-    </div>
-
-    <!-- 設定画面 -->
-    <div id="configScreen" class="screen">
-        <div class="config-container">
-            <h2>設定</h2>
-            <div class="config-item">
-                <label>BGM音量</label>
-                <input type="range" id="bgmVolume" min="0" max="100" value="70">
-                <span id="bgmVolumeValue">70</span>
-            </div>
-            <div class="config-item">
-                <label>効果音音量</label>
-                <input type="range" id="seVolume" min="0" max="100" value="80">
-                <span id="seVolumeValue">80</span>
-            </div>
-            <div class="config-item">
-                <label>テキスト速度</label>
-                <input type="range" id="textSpeed" min="1" max="10" value="5">
-                <span id="textSpeedValue">5</span>
-            </div>
-            <button id="configBackBtn" class="title-btn">戻る</button>
+        
+        <!-- UI controls -->
+        <div class="game-ui" role="toolbar" aria-label="ゲーム操作">
+            <button id="menuBtn" class="ui-button" type="button" aria-label="メニューを開く">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            </button>
+            <button id="saveBtn" class="ui-button" type="button" aria-label="クイックセーブ">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            </button>
         </div>
     </div>
 
     <!-- メニュー画面 -->
-    <div id="menuScreen" class="screen">
-        <div class="menu-container">
-            <h2>メニュー</h2>
-            <button id="resumeBtn" class="menu-btn">ゲームに戻る</button>
-            <button id="saveGameBtn" class="menu-btn">セーブ</button>
-            <button id="loadGameBtn" class="menu-btn">ロード</button>
-            <button id="configFromMenuBtn" class="menu-btn">設定</button>
-            <button id="titleFromMenuBtn" class="menu-btn">タイトルに戻る</button>
+    <div id="menuScreen" class="screen menu-overlay hidden">
+        <div class="menu-content" role="dialog" aria-labelledby="menuTitle">
+            <h2 id="menuTitle">メニュー</h2>
+            <nav role="navigation" aria-label="メニュー操作">
+                <button id="resumeBtn" class="menu-button" type="button">ゲームに戻る</button>
+                <button id="saveGameBtn" class="menu-button" type="button">セーブする</button>
+                <button id="loadGameBtn" class="menu-button" type="button">ロードする</button>
+                <button id="titleBtn" class="menu-button" type="button">タイトルに戻る</button>
+            </nav>
         </div>
     </div>
 
-    <!-- 音声要素 -->
-    <audio id="bgmPlayer" loop preload="auto"></audio>
-    <audio id="sePlayer" preload="auto"></audio>
+    <!-- ローディング画面 -->
+    <div id="loadingScreen" class="screen" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>読み込み中...</p>
+        </div>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- JavaScript読み込み -->
+    <script src="./script.js"></script>
+    
+    <!-- エラーハンドリング -->
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('Game Error:', e.error);
+            alert('ゲームでエラーが発生しました。ページを再読み込みしてください。');
+        });
+        
+        // iOS Safari対応
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            document.body.style.webkitUserSelect = 'none';
+            document.body.style.webkitTouchCallout = 'none';
+        }
+    </script>
 </body>
 </html>
