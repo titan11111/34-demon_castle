@@ -588,9 +588,15 @@ class DemonCastleGame {
 // ゲーム初期化
 let game;
 
-document.addEventListener('DOMContentLoaded', () => {
+function initGame() {
     game = new DemonCastleGame();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+} else {
+    initGame();
+}
 
 // サービスワーカー登録（PWA対応の準備）
 if ('serviceWorker' in navigator) {
