@@ -1,618 +1,602 @@
 // ゲーム状態管理
 class GameState {
     constructor() {
-        this.currentScene = 'start';
-        this.bgmVolume = 0.7;
-        this.seVolume = 0.8;
-        this.textSpeed = 5;
+        this.currentScene = 0;
+        this.currentLine = 0;
+        this.playerChoices = [];
+        this.gameFlags = {
+            morality: 0, // 良心値
+            visitedScenes: [],
+            savedMina: false,
+            trustedShadow: false
+        };
         this.isTyping = false;
+        this.saveData = {};
+    }
+
+    // セーブ機能
+    save() {
+        const saveData = {
+            currentScene: this.currentScene,
+            currentLine: this.currentLine,
+            playerChoices: this.playerChoices,
+            gameFlags: this.gameFlags,
+            timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('demonCastleSave', JSON.stringify(saveData));
+        alert('ゲームをセーブしました！');
+    }
+
+    // ロード機能
+    load() {
+        const saveData = localStorage.getItem('demonCastleSave');
+        if (saveData) {
+            const data = JSON.parse(saveData);
+            this.currentScene = data.currentScene;
+            this.currentLine = data.currentLine;
+            this.playerChoices = data.playerChoices;
+            this.gameFlags = data.gameFlags;
+            game.loadScene(this.currentScene);
+            alert('ゲームをロードしました！');
+        } else {
+            alert('セーブデータが見つかりません。');
+        }
+    }
+}
+
+// ゲームシナリオデータ
+const gameScenarios = {
+    0: { // オープニング
+        background: "cottage",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "息子のアルが病に倒れて、もう三日になる...",
+            "村の薬師は首を振るばかり。",
+            "「魔王城に伝説の薬草がある」そんな噂を聞いた。",
+            "危険を承知で、私は魔王城へ向かうことにした。"
+        ],
+        choices: [
+            { text: "すぐに出発する", next: 1, morality: 1 },
+            { text: "準備を整えてから", next: 2, morality: 0 },
+            { text: "他の方法を探す", next: 3, morality: -1 }
+        ]
+    },
+    1: { // 急いで出発
+        background: "forest",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "夜の森は静寂に包まれている。",
+            "月明かりが木々の間から差し込んで、不気味な影を作っている。",
+            "急がなければ...アルが...",
+            "その時、前方に巨大な城の影が見えてきた。"
+        ],
+        choices: [
+            { text: "正面から堂々と入る", next: 4, morality: 1 },
+            { text: "裏口を探す", next: 5, morality: 0 },
+            { text: "様子を見る", next: 6, morality: -1 }
+        ]
+    },
+    2: { // 準備してから出発
+        background: "cottage",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "武器と食料を準備した。",
+            "アルの枕元で手を握る。熱い...",
+            "「お母さん、必ず帰ってくるよ」",
+            "そう約束して、私は家を後にした。"
+        ],
+        choices: [
+            { text: "森の小道を通る", next: 7, morality: 0 },
+            { text: "街道を行く", next: 8, morality: 1 }
+        ]
+    },
+    4: { // 正面突破
+        background: "castle_gate",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "魔王城の門は既に開いていた.",
+            "まるで私を待っていたかのように...",
+            "足音が石畳に響く。",
+            "城内は薄暗く、どこからともなく視線を感じる。"
+        ],
+        choices: [
+            { text: "大広間へ向かう", next: 9, morality: 1 },
+            { text: "地下へ降りる", next: 10, morality: 0 }
+        ]
+    },
+    9: { // 大広間
+        background: "throne_room",
+        character: "shadow",
+        speaker: "影",
+        lines: [
+            "よく来たな、セラ...",
+            "君の息子のことは知っている。",
+            "薬草は確かにここにある。",
+            "だが、それを得るには...代償が必要だ。"
+        ],
+        choices: [
+            { text: "何でも払う", next: 11, morality: -1 },
+            { text: "条件を聞く", next: 12, morality: 0 },
+            { text: "拒否する", next: 13, morality: 1 }
+        ]
+    },
+    11: { // 代償を受け入れる
+        background: "altar",
+        character: "shadow",
+        speaker: "影",
+        lines: [
+            "そうか...では取引成立だ。",
+            "薬草と引き換えに、君の記憶をもらおう。",
+            "息子との思い出を...すべて。",
+            "それでもいいのか？"
+        ],
+        choices: [
+            { text: "受け入れる", next: 14, morality: -2 },
+            { text: "やっぱり断る", next: 15, morality: 1 }
+        ]
+    },
+    14: { // バッドエンド1
+        background: "cottage",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "私は家に帰った。",
+            "手には確かに薬草が握られている。",
+            "でも...なぜここにいるのか思い出せない。",
+            "ベッドに寝ている少年は...誰だっけ？"
+        ],
+        isEnding: true,
+        endingType: "bad"
+    },
+    12: { // 条件を聞く
+        background: "altar",
+        character: "mina",
+        speaker: "ミーナ",
+        lines: [
+            "お母さん...？",
+            "私よ、ミーナよ...",
+            "昔、この城で殺された少女の霊。",
+            "私を成仏させてくれるなら、薬草をあげる。"
+        ],
+        choices: [
+            { text: "成仏させてあげる", next: 16, morality: 2 },
+            { text: "本当にミーナなの？", next: 17, morality: 0 }
+        ]
+    },
+    16: { // トゥルーエンド
+        background: "sunrise",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "ミーナの魂は光に包まれて消えていった。",
+            "残された薬草を手に、私は家路についた。",
+            "アルは薬を飲んで、すぐに回復した。",
+            "母と子の絆が、すべてを救ったのだ。"
+        ],
+        isEnding: true,
+        endingType: "true"
+    },
+    17: { // 疑いを持つ
+        background: "altar",
+        character: "shadow",
+        speaker: "影",
+        lines: [
+            "フフフ...鋭いな。",
+            "そう、私は影。この城の主だ。",
+            "ミーナは確かに存在した。だが今は...",
+            "君はどちらを選ぶ？真実か、幻想か。"
+        ],
+        choices: [
+            { text: "真実を求める", next: 18, morality: 1 },
+            { text: "幻想でもいい", next: 19, morality: -1 }
+        ]
+    },
+    18: { // 真実ルート
+        background: "memory_maze",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "記憶の迷宮に足を踏み入れた。",
+            "壁には無数の目が浮かんでいる。",
+            "これは...私の過去の記憶？",
+            "そうだ、私もかつてここで...何かを失った。"
+        ],
+        choices: [
+            { text: "記憶を辿る", next: 20, morality: 1 },
+            { text: "立ち去る", next: 21, morality: 0 }
+        ]
+    },
+    20: { // 記憶の真実
+        background: "memory_maze",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "思い出した...私は昔、娘を失った。",
+            "ミーナ...それは私の娘の名前だった。",
+            "この城で事故で...私が守れなかった。",
+            "アルは二番目の子。同じ過ちは繰り返さない。"
+        ],
+        choices: [
+            { text: "娘を許す", next: 22, morality: 2 },
+            { text: "自分を許す", next: 23, morality: 1 }
+        ]
+    },
+    22: { // 真の救済エンド
+        background: "light",
+        character: "mina",
+        speaker: "本物のミーナ",
+        lines: [
+            "お母さん...ありがとう。",
+            "私はもう大丈夫。弟を守って。",
+            "これは私からの最後の贈り物。",
+            "愛は時を超えて、すべてを癒すのね。"
+        ],
+        isEnding: true,
+        endingType: "perfect"
+    }
+};
+
+// ゲームクラス
+class DemonCastleGame {
+    constructor() {
+        this.state = new GameState();
+        this.currentScenario = null;
+        this.textSpeed = 50; // ミリ秒
         this.isAutoMode = false;
-        this.readScenes = new Set();
-        this.gameFlags = {};
-    }
-}
-
-// グローバル変数
-let gameState = new GameState();
-let currentScenario = {};
-let typeInterval = null;
-let autoInterval = null;
-
-// シナリオデータ（通常は外部JSONファイルですが、今回は埋め込み）
-const scenario = {
-    "start": {
-        "text": "放課後の教室。夕日が窓から差し込んで、机や椅子に長い影を作っている。\n\n（今日も一人か...）\n\n机の引き出しを整理していると、奥から古いカセットテープが出てきた。ラベルには「楓へ」と書かれている。\n\n（これ、私の名前...でも誰が？）",
-        "bg": "./assets/images/bg_classroom.jpg",
-        "bgm": "./assets/audio/bgm_intro.mp3",
-        "se": null,
-        "choices": {
-            "カセットを再生してみる": "scene1",
-            "気味が悪いので捨てる": "scene_bad1"
-        }
-    },
-    "scene1": {
-        "text": "古いラジカセにカセットを入れて再生ボタンを押す。\n\n『...楓ちゃん、聞こえる？』\n\n知らない女の子の声。でも、なぜか懐かしい感じがする。\n\n『私はユリ。覚えてない？小学校の時の...』\n\n（ユリ...？小学校の時の記憶が曖昧で...）",
-        "bg": "./assets/images/bg_classroom.jpg",
-        "bgm": "./assets/audio/bgm_mystery.mp3",
-        "se": "./assets/audio/se_tape_insert.mp3",
-        "speaker": "謎の声",
-        "choices": {
-            "もっと聞いてみる": "scene2",
-            "怖くなって止める": "scene_bad2"
-        }
-    },
-    "scene2": {
-        "text": "『あの頃、私たちはいつも一緒だった。図書室で本を読んだり、屋上で空を見上げたり...』\n\n少しずつ記憶の欠片が戻ってくる。小学校5年生の時、確かに仲良しの女の子がいた。\n\n（そうだ...ユリちゃん。転校していったんだ）\n\n『でも楓ちゃん、私はもういない。だから、この声だけが私の全て...』",
-        "bg": "./assets/images/bg_library.jpg",
-        "bgm": "./assets/audio/bgm_memory.mp3",
-        "se": null,
-        "speaker": "ユリ",
-        "choices": {
-            "「ユリちゃん、どこにいるの？」": "scene3_true",
-            "「これは夢なの？」": "scene3_mystery"
-        }
-    },
-    "scene3_true": {
-        "text": "『楓ちゃん...私のこと、本当に覚えてくれてるんだね』\n\nユリの声が嬉しそうに響く。\n\n『実は私、あの時の事故で...でも、楓ちゃんと過ごした思い出だけは消えなくて』\n\n（事故...？そうだ、ユリちゃんは転校じゃなくて...）\n\n記憶の奥から、悲しい真実が浮かび上がってくる。",
-        "bg": "./assets/images/bg_memory.jpg",
-        "bgm": "./assets/audio/bgm_sad.mp3",
-        "se": null,
-        "speaker": "ユリ",
-        "choices": {
-            "「一緒にいよう」": "ending_true",
-            "「さよならを言おう」": "ending_bittersweet"
-        }
-    },
-    "scene3_mystery": {
-        "text": "『夢かもしれない。現実かもしれない。でも、この気持ちは本物よ』\n\n教室が薄暗くなり、不思議な光が漂い始める。\n\n『楓ちゃん、信じて。私たちの友情を』\n\n（何か大切なことを忘れているような...）",
-        "bg": "./assets/images/bg_mystery.jpg",
-        "bgm": "./assets/audio/bgm_mysterious.mp3",
-        "se": "./assets/audio/se_mystery.mp3",
-        "speaker": "ユリ",
-        "choices": {
-            "信じる": "scene4_trust",
-            "疑う": "scene4_doubt"
-        }
-    },
-    "ending_true": {
-        "text": "『ありがとう、楓ちゃん。ずっと一人だったけど、やっと安らげる』\n\nユリの声が暖かく響き、教室が優しい光に包まれる。\n\n『今度は、ちゃんとお別れを言えるね』\n\n私は涙を流しながら、小さく頷いた。親友との、本当のお別れ。\n\n--- True End: 友情の絆 ---",
-        "bg": "./assets/images/bg_sunset.jpg",
-        "bgm": "./assets/audio/bgm_ending_true.mp3",
-        "se": null,
-        "speaker": "ユリ",
-        "choices": {}
-    },
-    "ending_bittersweet": {
-        "text": "『そう...お別れの時なのね』\n\nユリの声に寂しさが滲む。\n\n『でも楓ちゃん、私たちの思い出は永遠よ。大人になっても、忘れないで』\n\n夕日が教室を染める中、カセットの音が静かに止まった。\n\n机の上には、一枚の古い写真。笑顔の私とユリちゃんが写っている。\n\n--- Bittersweet End: 思い出の中で ---",
-        "bg": "./assets/images/bg_sunset.jpg",
-        "bgm": "./assets/audio/bgm_ending_bitter.mp3",
-        "se": "./assets/audio/se_tape_stop.mp3",
-        "speaker": null,
-        "choices": {}
-    },
-    "scene_bad1": {
-        "text": "カセットを捨てて家に帰った。\n\nでも夜、夢の中で女の子の泣き声が聞こえ続けた。\n\n『楓ちゃん...どうして...』\n\n朝起きると、枕が涙で濡れていた。\n\n大切な何かを失ってしまったような、そんな気持ちだった。\n\n--- Bad End: 失われた記憶 ---",
-        "bg": "./assets/images/bg_night.jpg",
-        "bgm": "./assets/audio/bgm_bad.mp3",
-        "se": null,
-        "speaker": null,
-        "choices": {}
-    },
-    "scene_bad2": {
-        "text": "怖くなってカセットを止めた。\n\n教室に静寂が戻る。でも心の奥で、誰かが泣いているような気がした。\n\n（気のせい...よね？）\n\nそれからしばらく、時々聞こえる小さな声に悩まされることになった。\n\n--- Bad End: 届かなかった声 ---",
-        "bg": "./assets/images/bg_classroom.jpg",
-        "bgm": "./assets/audio/bgm_sad.mp3",
-        "se": null,
-        "speaker": null,
-        "choices": {}
-    }
-};
-
-// DOM要素の取得
-const elements = {
-    titleScreen: null,
-    gameScreen: null,
-    configScreen: null,
-    menuScreen: null,
-    background: null,
-    nameBox: null,
-    gameText: null,
-    nextIndicator: null,
-    choicesContainer: null,
-    bgmPlayer: null,
-    sePlayer: null
-};
-
-// 初期化
-document.addEventListener('DOMContentLoaded', function() {
-    initializeElements();
-    setupEventListeners();
-    loadSettings();
-    showScreen('titleScreen');
-});
-
-// DOM要素を取得
-function initializeElements() {
-    elements.titleScreen = document.getElementById('titleScreen');
-    elements.gameScreen = document.getElementById('gameScreen');
-    elements.configScreen = document.getElementById('configScreen');
-    elements.menuScreen = document.getElementById('menuScreen');
-
-    // HTML側では背景が<div id="gameBackground">として定義されている
-    elements.background = document.getElementById('gameBackground') || document.getElementById('background');
-
-    // 話者名と次ボタンのidもHTMLと合わせる
-    elements.nameBox = document.getElementById('speakerName') || document.getElementById('nameBox');
-    elements.gameText = document.getElementById('gameText');
-    elements.nextIndicator = document.getElementById('nextButton') || document.getElementById('nextIndicator');
-    elements.choicesContainer = document.getElementById('choicesContainer');
-
-    // オーディオ要素が存在しない場合は動的に生成する
-    elements.bgmPlayer = document.getElementById('bgmPlayer');
-    if (!elements.bgmPlayer) {
-        elements.bgmPlayer = document.createElement('audio');
-        elements.bgmPlayer.id = 'bgmPlayer';
-        elements.bgmPlayer.loop = true;
-        document.body.appendChild(elements.bgmPlayer);
+        
+        this.initializeElements();
+        this.bindEvents();
+        this.showTitleScreen();
     }
 
-    elements.sePlayer = document.getElementById('sePlayer');
-    if (!elements.sePlayer) {
-        elements.sePlayer = document.createElement('audio');
-        elements.sePlayer.id = 'sePlayer';
-        document.body.appendChild(elements.sePlayer);
-    }
-}
-
-// イベントリスナーの設定
-function setupEventListeners() {
-    // タイトル画面
-    const startBtn = document.getElementById('startBtn');
-    if (startBtn) startBtn.addEventListener('click', () => startNewGame());
-
-    const loadBtn = document.getElementById('loadBtn');
-    if (loadBtn) loadBtn.addEventListener('click', () => loadGame());
-
-    const configBtn = document.getElementById('configBtn');
-    if (configBtn) configBtn.addEventListener('click', () => showScreen('configScreen'));
-
-    // ゲーム画面
-    const menuBtn = document.getElementById('menuBtn');
-    if (menuBtn) menuBtn.addEventListener('click', () => showScreen('menuScreen'));
-
-    const autoBtn = document.getElementById('autoBtn');
-    if (autoBtn) autoBtn.addEventListener('click', () => toggleAuto());
-
-    const skipBtn = document.getElementById('skipBtn');
-    if (skipBtn) skipBtn.addEventListener('click', () => toggleSkip());
-
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) saveBtn.addEventListener('click', () => saveGame());
-
-    // テキストボックス・次へボタンクリック
-    const textWindow = document.getElementById('textWindow');
-    if (textWindow) textWindow.addEventListener('click', () => nextText());
-
-    const nextButton = document.getElementById('nextButton');
-    if (nextButton) {
-        nextButton.addEventListener('click', () => nextText());
-        nextButton.addEventListener('touchend', () => nextText());
+    initializeElements() {
+        // 画面要素
+        this.titleScreen = document.getElementById('titleScreen');
+        this.gameScreen = document.getElementById('gameScreen');
+        this.menuScreen = document.getElementById('menuScreen');
+        
+        // ゲーム要素
+        this.gameBackground = document.getElementById('gameBackground');
+        this.characterSprite = document.getElementById('characterSprite');
+        this.textWindow = document.getElementById('textWindow');
+        this.speakerName = document.getElementById('speakerName');
+        this.gameText = document.getElementById('gameText');
+        this.nextButton = document.getElementById('nextButton');
+        this.choicesContainer = document.getElementById('choicesContainer');
+        
+        // ボタン
+        this.startBtn = document.getElementById('startBtn');
+        this.menuBtn = document.getElementById('menuBtn');
+        this.saveBtn = document.getElementById('saveBtn');
+        this.resumeBtn = document.getElementById('resumeBtn');
+        this.saveGameBtn = document.getElementById('saveGameBtn');
+        this.loadGameBtn = document.getElementById('loadGameBtn');
+        this.titleBtn = document.getElementById('titleBtn');
     }
 
-    // 設定画面
-    const configBackBtn = document.getElementById('configBackBtn');
-    if (configBackBtn) configBackBtn.addEventListener('click', () => showScreen('titleScreen'));
+    bindEvents() {
+        // タイトル画面
+        this.startBtn.addEventListener('click', () => this.startGame());
+        
+        // ゲーム操作
+        this.nextButton.addEventListener('click', () => this.nextLine());
+        this.menuBtn.addEventListener('click', () => this.showMenu());
+        this.saveBtn.addEventListener('click', () => this.quickSave());
+        
+        // メニュー
+        this.resumeBtn.addEventListener('click', () => this.hideMenu());
+        this.saveGameBtn.addEventListener('click', () => this.saveGame());
+        this.loadGameBtn.addEventListener('click', () => this.loadGame());
+        this.titleBtn.addEventListener('click', () => this.returnToTitle());
+        
+        // キーボード操作
+        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        
+        // 選択肢クリック
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('choice-item')) {
+                this.selectChoice(parseInt(e.target.dataset.choice));
+            }
+        });
 
-    // 音量設定
-    const bgmVolume = document.getElementById('bgmVolume');
-    if (bgmVolume) bgmVolume.addEventListener('input', updateBgmVolume);
+        // タッチ操作対応
+        this.gameText.addEventListener('touchend', () => this.nextLine());
+    }
 
-    const seVolume = document.getElementById('seVolume');
-    if (seVolume) seVolume.addEventListener('input', updateSeVolume);
+    handleKeyboard(e) {
+        switch(e.key) {
+            case ' ':
+            case 'Enter':
+                e.preventDefault();
+                if (!this.choicesContainer.classList.contains('hidden')) return;
+                this.nextLine();
+                break;
+            case 'Escape':
+                this.showMenu();
+                break;
+            case 's':
+            case 'S':
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    this.quickSave();
+                }
+                break;
+        }
+    }
 
-    const textSpeed = document.getElementById('textSpeed');
-    if (textSpeed) textSpeed.addEventListener('input', updateTextSpeed);
+    showTitleScreen() {
+        this.hideAllScreens();
+        this.titleScreen.classList.add('active');
+        this.playBGM('title');
+    }
 
-    // メニュー画面
-    const resumeBtn = document.getElementById('resumeBtn');
-    if (resumeBtn) resumeBtn.addEventListener('click', () => showScreen('gameScreen'));
+    startGame() {
+        this.hideAllScreens();
+        this.gameScreen.classList.add('active');
+        this.state.currentScene = 0;
+        this.state.currentLine = 0;
+        this.loadScene(0);
+        this.playBGM('game');
+    }
 
-    const saveGameBtn = document.getElementById('saveGameBtn');
-    if (saveGameBtn) saveGameBtn.addEventListener('click', () => saveGame());
-
-    const loadGameBtn = document.getElementById('loadGameBtn');
-    if (loadGameBtn) loadGameBtn.addEventListener('click', () => loadGame());
-
-    const configFromMenuBtn = document.getElementById('configFromMenuBtn');
-    if (configFromMenuBtn) configFromMenuBtn.addEventListener('click', () => showScreen('configScreen'));
-
-    const titleFromMenuBtn = document.getElementById('titleFromMenuBtn');
-    if (titleFromMenuBtn) {
-        titleFromMenuBtn.addEventListener('click', () => {
-            if (confirm('タイトルに戻りますか？')) showScreen('titleScreen');
+    hideAllScreens() {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
         });
     }
 
-    // キーボード操作
-    document.addEventListener('keydown', handleKeyboard);
-}
-
-// 画面切り替え
-function showScreen(screenName) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    document.getElementById(screenName).classList.add('active');
-}
-
-// 新しいゲームを開始
-function startNewGame() {
-    gameState = new GameState();
-    showScreen('gameScreen');
-    loadScene('start');
-}
-
-// シーンをロード
-function loadScene(sceneId) {
-    if (!scenario[sceneId]) return;
-    
-    gameState.currentScene = sceneId;
-    gameState.readScenes.add(sceneId);
-    currentScenario = scenario[sceneId];
-    
-    // 背景変更
-    if (currentScenario.bg) {
-        changeBackground(currentScenario.bg);
-    }
-    
-    // BGM変更
-    if (currentScenario.bgm) {
-        playBgm(currentScenario.bgm);
-    }
-    
-    // 効果音再生
-    if (currentScenario.se) {
-        playSe(currentScenario.se);
-    }
-    
-    // 話者名表示
-    if (currentScenario.speaker) {
-        elements.nameBox.textContent = currentScenario.speaker;
-        elements.nameBox.style.display = 'block';
-    } else {
-        elements.nameBox.style.display = 'none';
-    }
-    
-    // テキスト表示
-    typeText(currentScenario.text, () => {
-        showChoices();
-    });
-}
-
-// 背景変更
-function changeBackground(imagePath) {
-    if (!elements.background) return;
-    elements.background.classList.add('fade-out');
-    setTimeout(() => {
-        // div要素に背景画像を設定
-        if (elements.background.tagName === 'IMG') {
-            elements.background.src = imagePath;
-        } else {
-            elements.background.style.backgroundImage = `url(${imagePath})`;
+    loadScene(sceneId) {
+        this.currentScenario = gameScenarios[sceneId];
+        if (!this.currentScenario) {
+            console.error('Scene not found:', sceneId);
+            return;
         }
-        elements.background.classList.remove('fade-out');
-        elements.background.classList.add('fade-in');
-    }, 500);
-}
-
-// BGM再生
-function playBgm(audioPath) {
-    if (elements.bgmPlayer.src !== audioPath) {
-        elements.bgmPlayer.src = audioPath;
-        elements.bgmPlayer.volume = gameState.bgmVolume;
-        elements.bgmPlayer.play().catch(e => console.log('BGM再生エラー:', e));
+        
+        this.state.currentScene = sceneId;
+        this.state.currentLine = 0;
+        
+        // 背景を更新
+        this.updateBackground(this.currentScenario.background);
+        
+        // キャラクターを更新
+        this.updateCharacter(this.currentScenario.character);
+        
+        // 話者名を更新
+        this.speakerName.textContent = this.currentScenario.speaker;
+        
+        // 選択肢を非表示
+        this.choicesContainer.classList.add('hidden');
+        
+        // 最初のセリフを表示
+        this.displayLine();
+        
+        // 訪問済みシーンに追加
+        if (!this.state.gameFlags.visitedScenes.includes(sceneId)) {
+            this.state.gameFlags.visitedScenes.push(sceneId);
+        }
     }
-}
 
-// 効果音再生
-function playSe(audioPath) {
-    elements.sePlayer.src = audioPath;
-    elements.sePlayer.volume = gameState.seVolume;
-    elements.sePlayer.play().catch(e => console.log('SE再生エラー:', e));
-}
+    updateBackground(backgroundType) {
+        const svg = this.gameBackground.querySelector('.scene-bg');
+        const rect = svg.querySelector('rect');
+        
+        switch(backgroundType) {
+            case 'cottage':
+                rect.setAttribute('fill', '#2d1f0f');
+                break;
+            case 'forest':
+                rect.setAttribute('fill', '#0f2d0f');
+                break;
+            case 'castle_gate':
+                rect.setAttribute('fill', '#2d1b3d');
+                break;
+            case 'throne_room':
+                rect.setAttribute('fill', '#1a0033');
+                break;
+            case 'altar':
+                rect.setAttribute('fill', '#330011');
+                break;
+            case 'memory_maze':
+                rect.setAttribute('fill', '#1a1a2e');
+                break;
+            case 'sunrise':
+                rect.setAttribute('fill', '#ff6b4a');
+                break;
+            case 'light':
+                rect.setAttribute('fill', '#ffffff');
+                break;
+            default:
+                rect.setAttribute('fill', '#2d1b3d');
+        }
+    }
 
-// テキストをタイピング風に表示
-function typeText(text, callback) {
-    if (gameState.isTyping) return;
-    
-    gameState.isTyping = true;
-    elements.gameText.textContent = '';
-    elements.nextIndicator.style.display = 'none';
-    
-    let index = 0;
-    const speed = 100 - (gameState.textSpeed * 10);
-    
-    typeInterval = setInterval(() => {
+    updateCharacter(characterType) {
+        const sprite = this.characterSprite.querySelector('svg');
+        
+        // キャラクター切り替え（簡易版）
+        switch(characterType) {
+            case 'sera':
+                sprite.style.display = 'block';
+                break;
+            case 'shadow':
+                sprite.style.filter = 'brightness(0.3) contrast(2)';
+                break;
+            case 'mina':
+                sprite.style.filter = 'brightness(1.2) sepia(0.5)';
+                break;
+            default:
+                sprite.style.display = 'block';
+                sprite.style.filter = 'none';
+        }
+    }
+
+    displayLine() {
+        if (!this.currentScenario || this.state.isTyping) return;
+        
+        const lines = this.currentScenario.lines;
+        const currentLine = lines[this.state.currentLine];
+        
+        if (!currentLine) {
+            this.showChoices();
+            return;
+        }
+        
+        this.state.isTyping = true;
+        this.gameText.textContent = '';
+        
+        // タイプライター効果
+        this.typeLine(currentLine, 0);
+    }
+
+    typeLine(text, index) {
         if (index < text.length) {
-            elements.gameText.textContent += text[index];
-            index++;
+            this.gameText.textContent += text[index];
+            setTimeout(() => this.typeLine(text, index + 1), this.textSpeed);
         } else {
-            clearInterval(typeInterval);
-            gameState.isTyping = false;
-            elements.nextIndicator.style.display = 'block';
-            if (callback) callback();
+            this.state.isTyping = false;
         }
-    }, speed);
-}
-
-// 次のテキストへ
-function nextText() {
-    if (gameState.isTyping) {
-        // タイピング中なら一気に表示
-        clearInterval(typeInterval);
-        elements.gameText.textContent = currentScenario.text;
-        gameState.isTyping = false;
-        elements.nextIndicator.style.display = 'block';
-        showChoices();
     }
-}
 
-// 選択肢を表示
-function showChoices() {
-    elements.choicesContainer.innerHTML = '';
-    
-    if (currentScenario.choices && Object.keys(currentScenario.choices).length > 0) {
-        Object.entries(currentScenario.choices).forEach(([choiceText, nextScene]) => {
-            const button = document.createElement('button');
-            button.className = 'choice-btn';
-            button.textContent = choiceText;
-            button.addEventListener('click', () => selectChoice(nextScene));
-            elements.choicesContainer.appendChild(button);
+    nextLine() {
+        if (this.state.isTyping) {
+            // タイピング中なら即座に完了
+            this.state.isTyping = false;
+            this.gameText.textContent = this.currentScenario.lines[this.state.currentLine];
+            return;
+        }
+        
+        this.state.currentLine++;
+        this.displayLine();
+    }
+
+    showChoices() {
+        if (!this.currentScenario.choices) {
+            // エンディングチェック
+            if (this.currentScenario.isEnding) {
+                this.showEnding(this.currentScenario.endingType);
+                return;
+            }
+            return;
+        }
+        
+        const choicesWrapper = this.choicesContainer.querySelector('.choices-wrapper');
+        choicesWrapper.innerHTML = '';
+        
+        this.currentScenario.choices.forEach((choice, index) => {
+            const choiceElement = document.createElement('div');
+            choiceElement.className = 'choice-item choice-appear';
+            choiceElement.textContent = choice.text;
+            choiceElement.dataset.choice = index;
+            choiceElement.style.animationDelay = `${index * 0.1}s`;
+            choicesWrapper.appendChild(choiceElement);
         });
-    } else {
-        // エンディングの場合
+        
+        this.choicesContainer.classList.remove('hidden');
+        this.playSE('choice_appear');
+    }
+
+    selectChoice(choiceIndex) {
+        const choice = this.currentScenario.choices[choiceIndex];
+        if (!choice) return;
+        
+        // 選択を記録
+        this.state.playerChoices.push({
+            scene: this.state.currentScene,
+            choice: choiceIndex,
+            text: choice.text
+        });
+        
+        // 道徳値を更新
+        this.state.gameFlags.morality += choice.morality || 0;
+        
+        // 効果音
+        this.playSE('choice_select');
+        
+        // 次のシーンへ
         setTimeout(() => {
-            const button = document.createElement('button');
-            button.className = 'choice-btn';
-            button.textContent = 'タイトルに戻る';
-            button.addEventListener('click', () => showScreen('titleScreen'));
-            elements.choicesContainer.appendChild(button);
+            this.loadScene(choice.next);
+        }, 500);
+    }
+
+    showEnding(endingType) {
+        let endingMessage = '';
+        
+        switch(endingType) {
+            case 'bad':
+                endingMessage = 'バッドエンド：記憶を失った母';
+                break;
+            case 'true':
+                endingMessage = 'トゥルーエンド：愛の勝利';
+                break;
+            case 'perfect':
+                endingMessage = 'パーフェクトエンド：真の救済';
+                break;
+        }
+        
+        setTimeout(() => {
+            alert(`${endingMessage}\n\nゲームクリア！\n道徳値: ${this.state.gameFlags.morality}`);
+            this.returnToTitle();
         }, 2000);
     }
-}
 
-// 選択肢を選択
-function selectChoice(nextScene) {
-    elements.choicesContainer.innerHTML = '';
-    playSe('./assets/audio/se_select.mp3');
-    setTimeout(() => {
-        loadScene(nextScene);
-    }, 500);
-}
+    showMenu() {
+        this.menuScreen.classList.remove('hidden');
+        this.menuScreen.classList.add('active');
+    }
 
-// オートモード切り替え
-function toggleAuto() {
-    gameState.isAutoMode = !gameState.isAutoMode;
-    const btn = document.getElementById('autoBtn');
-    
-    if (gameState.isAutoMode) {
-        btn.style.backgroundColor = 'rgba(135, 206, 235, 0.5)';
-        btn.textContent = 'オート中';
-        startAutoMode();
-    } else {
-        btn.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        btn.textContent = 'オート';
-        stopAutoMode();
+    hideMenu() {
+        this.menuScreen.classList.remove('active');
+        this.menuScreen.classList.add('hidden');
+    }
+
+    quickSave() {
+        this.state.save();
+    }
+
+    saveGame() {
+        this.state.save();
+        this.hideMenu();
+    }
+
+    loadGame() {
+        this.state.load();
+        this.hideMenu();
+    }
+
+    returnToTitle() {
+        this.hideMenu();
+        this.showTitleScreen();
+        this.state = new GameState(); // リセット
+    }
+
+    // サウンド関連（実際の音声ファイルがない場合のダミー）
+    playBGM(bgmType) {
+        console.log(`Playing BGM: ${bgmType}`);
+        // 実際の実装では音声ファイルを再生
+    }
+
+    playSE(seType) {
+        console.log(`Playing SE: ${seType}`);
+        // 実際の実装では効果音を再生
     }
 }
 
-// オートモード開始
-function startAutoMode() {
-    if (!gameState.isAutoMode) return;
-    
-    autoInterval = setInterval(() => {
-        if (!gameState.isTyping && Object.keys(currentScenario.choices || {}).length === 0) {
-            nextText();
-        }
-    }, 3000);
-}
+// ゲーム初期化
+let game;
 
-// オートモード停止
-function stopAutoMode() {
-    if (autoInterval) {
-        clearInterval(autoInterval);
-        autoInterval = null;
-    }
-}
-
-// スキップ機能
-function toggleSkip() {
-    if (gameState.readScenes.has(gameState.currentScene)) {
-        // 既読シーンなら高速表示
-        gameState.textSpeed = 10;
-        setTimeout(() => {
-            gameState.textSpeed = 5;
-        }, 1000);
-    }
-}
-
-// セーブ機能
-function saveGame() {
-    const saveData = {
-        currentScene: gameState.currentScene,
-        readScenes: Array.from(gameState.readScenes),
-        gameFlags: gameState.gameFlags,
-        timestamp: new Date().getTime()
-    };
-    
-    localStorage.setItem('soundnovel_save', JSON.stringify(saveData));
-    alert('セーブしました！');
-}
-
-// ロード機能
-function loadGame() {
-    const saveData = localStorage.getItem('soundnovel_save');
-    
-    if (saveData) {
-        const data = JSON.parse(saveData);
-        gameState.currentScene = data.currentScene;
-        gameState.readScenes = new Set(data.readScenes);
-        gameState.gameFlags = data.gameFlags || {};
-        
-        showScreen('gameScreen');
-        loadScene(gameState.currentScene);
-        alert('ロードしました！');
-    } else {
-        alert('セーブデータがありません。');
-    }
-}
-
-// 設定の保存
-function saveSettings() {
-    const settings = {
-        bgmVolume: gameState.bgmVolume,
-        seVolume: gameState.seVolume,
-        textSpeed: gameState.textSpeed
-    };
-    localStorage.setItem('soundnovel_settings', JSON.stringify(settings));
-}
-
-// 設定の読み込み
-function loadSettings() {
-    const settings = localStorage.getItem('soundnovel_settings');
-    
-    if (settings) {
-        const data = JSON.parse(settings);
-        gameState.bgmVolume = data.bgmVolume || 0.7;
-        gameState.seVolume = data.seVolume || 0.8;
-        gameState.textSpeed = data.textSpeed || 5;
-        
-        // UI反映
-        document.getElementById('bgmVolume').value = gameState.bgmVolume * 100;
-        document.getElementById('seVolume').value = gameState.seVolume * 100;
-        document.getElementById('textSpeed').value = gameState.textSpeed;
-        document.getElementById('bgmVolumeValue').textContent = Math.round(gameState.bgmVolume * 100);
-        document.getElementById('seVolumeValue').textContent = Math.round(gameState.seVolume * 100);
-        document.getElementById('textSpeedValue').textContent = gameState.textSpeed;
-    }
-}
-
-// 音量設定更新
-function updateBgmVolume(e) {
-    gameState.bgmVolume = e.target.value / 100;
-    elements.bgmPlayer.volume = gameState.bgmVolume;
-    document.getElementById('bgmVolumeValue').textContent = e.target.value;
-    saveSettings();
-}
-
-function updateSeVolume(e) {
-    gameState.seVolume = e.target.value / 100;
-    elements.sePlayer.volume = gameState.seVolume;
-    document.getElementById('seVolumeValue').textContent = e.target.value;
-    saveSettings();
-}
-
-function updateTextSpeed(e) {
-    gameState.textSpeed = parseInt(e.target.value);
-    document.getElementById('textSpeedValue').textContent = e.target.value;
-    saveSettings();
-}
-
-// キーボード操作
-function handleKeyboard(e) {
-    switch(e.key) {
-        case 'Enter':
-        case ' ':
-            nextText();
-            break;
-        case 'Escape':
-            if (document.getElementById('gameScreen').classList.contains('active')) {
-                showScreen('menuScreen');
-            }
-            break;
-        case 's':
-        case 'S':
-            if (e.ctrlKey) {
-                e.preventDefault();
-                saveGame();
-            }
-            break;
-        case 'l':
-        case 'L':
-            if (e.ctrlKey) {
-                e.preventDefault();
-                loadGame();
-            }
-            break;
-    }
-}
-
-// タッチ操作対応
-let touchStartY = 0;
-let touchEndY = 0;
-
-document.addEventListener('touchstart', function(e) {
-    touchStartY = e.changedTouches[0].screenY;
+document.addEventListener('DOMContentLoaded', () => {
+    game = new DemonCastleGame();
 });
 
-document.addEventListener('touchend', function(e) {
-    touchEndY = e.changedTouches[0].screenY;
-    handleSwipe();
-});
-
-function handleSwipe() {
-    const swipeThreshold = 50;
-    const diff = touchStartY - touchEndY;
-    
-    if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-            // 上スワイプ：メニュー表示
-            if (document.getElementById('gameScreen').classList.contains('active')) {
-                showScreen('menuScreen');
-            }
-        } else {
-            // 下スワイプ：テキスト進行
-            nextText();
-        }
-    }
-}
-
-// エラーハンドリング
-window.addEventListener('error', function(e) {
-    console.error('エラーが発生しました:', e.error);
-});
-
-// 音声ファイルが見つからない場合の代替処理
-function handleAudioError(audioElement, audioType) {
-    audioElement.addEventListener('error', function() {
-        console.warn(`${audioType}ファイルが見つかりません: ${audioElement.src}`);
+// サービスワーカー登録（PWA対応の準備）
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('SW registered'))
+            .catch(() => console.log('SW registration failed'));
     });
 }
-
-// 音声要素にエラーハンドリングを追加
-document.addEventListener('DOMContentLoaded', function() {
-    handleAudioError(elements.bgmPlayer, 'BGM');
-    handleAudioError(elements.sePlayer, '効果音');
-});
-
-// 画像の遅延読み込み対応
-function preloadImages() {
-    const imageUrls = [
-        './assets/images/bg_classroom.jpg',
-        './assets/images/bg_library.jpg',
-        './assets/images/bg_memory.jpg',
-        './assets/images/bg_mystery.jpg',
-        './assets/images/bg_sunset.jpg',
-        './assets/images/bg_night.jpg'
-    ];
-    
-    imageUrls.forEach(url => {
-        const img = new Image();
-        img.src = url;
-    });
-}
-
-// ゲーム開始時に画像を事前読み込み
-document.addEventListener('DOMContentLoaded', function() {
-    preloadImages();
-});
