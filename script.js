@@ -44,6 +44,16 @@ class GameState {
     }
 }
 
+// 未実装シーンのプレースホルダー
+const placeholderScene = {
+    background: "forest",
+    character: "sera",
+    speaker: "システム",
+    lines: ["このルートはまだ実装されていません。"],
+    isEnding: true,
+    endingType: "unfinished"
+};
+
 // ゲームシナリオデータ
 const gameScenarios = {
     0: { // オープニング
@@ -237,7 +247,18 @@ const gameScenarios = {
         ],
         isEnding: true,
         endingType: "perfect"
-    }
+    },
+    3: placeholderScene,
+    5: placeholderScene,
+    6: placeholderScene,
+    7: placeholderScene,
+    8: placeholderScene,
+    10: placeholderScene,
+    13: placeholderScene,
+    15: placeholderScene,
+    19: placeholderScene,
+    21: placeholderScene,
+    23: placeholderScene
 };
 
 // ゲームクラス
@@ -534,6 +555,9 @@ class DemonCastleGame {
                 break;
             case 'perfect':
                 endingMessage = 'パーフェクトエンド：真の救済';
+                break;
+            case 'unfinished':
+                endingMessage = '未実装のルート';
                 break;
         }
         
