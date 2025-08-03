@@ -137,47 +137,101 @@ function initializeElements() {
     elements.gameScreen = document.getElementById('gameScreen');
     elements.configScreen = document.getElementById('configScreen');
     elements.menuScreen = document.getElementById('menuScreen');
-    elements.background = document.getElementById('background');
-    elements.nameBox = document.getElementById('nameBox');
+
+    // HTML側では背景が<div id="gameBackground">として定義されている
+    elements.background = document.getElementById('gameBackground') || document.getElementById('background');
+
+    // 話者名と次ボタンのidもHTMLと合わせる
+    elements.nameBox = document.getElementById('speakerName') || document.getElementById('nameBox');
     elements.gameText = document.getElementById('gameText');
-    elements.nextIndicator = document.getElementById('nextIndicator');
+    elements.nextIndicator = document.getElementById('nextButton') || document.getElementById('nextIndicator');
     elements.choicesContainer = document.getElementById('choicesContainer');
+
+    // オーディオ要素が存在しない場合は動的に生成する
     elements.bgmPlayer = document.getElementById('bgmPlayer');
+    if (!elements.bgmPlayer) {
+        elements.bgmPlayer = document.createElement('audio');
+        elements.bgmPlayer.id = 'bgmPlayer';
+        elements.bgmPlayer.loop = true;
+        document.body.appendChild(elements.bgmPlayer);
+    }
+
     elements.sePlayer = document.getElementById('sePlayer');
+    if (!elements.sePlayer) {
+        elements.sePlayer = document.createElement('audio');
+        elements.sePlayer.id = 'sePlayer';
+        document.body.appendChild(elements.sePlayer);
+    }
 }
 
 // イベントリスナーの設定
 function setupEventListeners() {
     // タイトル画面
-    document.getElementById('startBtn').addEventListener('click', () => startNewGame());
-    document.getElementById('loadBtn').addEventListener('click', () => loadGame());
-    document.getElementById('configBtn').addEventListener('click', () => showScreen('configScreen'));
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) startBtn.addEventListener('click', () => startNewGame());
+
+    const loadBtn = document.getElementById('loadBtn');
+    if (loadBtn) loadBtn.addEventListener('click', () => loadGame());
+
+    const configBtn = document.getElementById('configBtn');
+    if (configBtn) configBtn.addEventListener('click', () => showScreen('configScreen'));
 
     // ゲーム画面
-    document.getElementById('menuBtn').addEventListener('click', () => showScreen('menuScreen'));
-    document.getElementById('autoBtn').addEventListener('click', () => toggleAuto());
-    document.getElementById('skipBtn').addEventListener('click', () => toggleSkip());
-    document.getElementById('saveBtn').addEventListener('click', () => saveGame());
+    const menuBtn = document.getElementById('menuBtn');
+    if (menuBtn) menuBtn.addEventListener('click', () => showScreen('menuScreen'));
 
-    // テキストボックスクリック
-    document.getElementById('textBox').addEventListener('click', () => nextText());
+    const autoBtn = document.getElementById('autoBtn');
+    if (autoBtn) autoBtn.addEventListener('click', () => toggleAuto());
+
+    const skipBtn = document.getElementById('skipBtn');
+    if (skipBtn) skipBtn.addEventListener('click', () => toggleSkip());
+
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) saveBtn.addEventListener('click', () => saveGame());
+
+    // テキストボックス・次へボタンクリック
+    const textWindow = document.getElementById('textWindow');
+    if (textWindow) textWindow.addEventListener('click', () => nextText());
+
+    const nextButton = document.getElementById('nextButton');
+    if (nextButton) {
+        nextButton.addEventListener('click', () => nextText());
+        nextButton.addEventListener('touchend', () => nextText());
+    }
 
     // 設定画面
-    document.getElementById('configBackBtn').addEventListener('click', () => showScreen('titleScreen'));
-    
+    const configBackBtn = document.getElementById('configBackBtn');
+    if (configBackBtn) configBackBtn.addEventListener('click', () => showScreen('titleScreen'));
+
     // 音量設定
-    document.getElementById('bgmVolume').addEventListener('input', updateBgmVolume);
-    document.getElementById('seVolume').addEventListener('input', updateSeVolume);
-    document.getElementById('textSpeed').addEventListener('input', updateTextSpeed);
+    const bgmVolume = document.getElementById('bgmVolume');
+    if (bgmVolume) bgmVolume.addEventListener('input', updateBgmVolume);
+
+    const seVolume = document.getElementById('seVolume');
+    if (seVolume) seVolume.addEventListener('input', updateSeVolume);
+
+    const textSpeed = document.getElementById('textSpeed');
+    if (textSpeed) textSpeed.addEventListener('input', updateTextSpeed);
 
     // メニュー画面
-    document.getElementById('resumeBtn').addEventListener('click', () => showScreen('gameScreen'));
-    document.getElementById('saveGameBtn').addEventListener('click', () => saveGame());
-    document.getElementById('loadGameBtn').addEventListener('click', () => loadGame());
-    document.getElementById('configFromMenuBtn').addEventListener('click', () => showScreen('configScreen'));
-    document.getElementById('titleFromMenuBtn').addEventListener('click', () => {
-        if(confirm('タイトルに戻りますか？')) showScreen('titleScreen');
-    });
+    const resumeBtn = document.getElementById('resumeBtn');
+    if (resumeBtn) resumeBtn.addEventListener('click', () => showScreen('gameScreen'));
+
+    const saveGameBtn = document.getElementById('saveGameBtn');
+    if (saveGameBtn) saveGameBtn.addEventListener('click', () => saveGame());
+
+    const loadGameBtn = document.getElementById('loadGameBtn');
+    if (loadGameBtn) loadGameBtn.addEventListener('click', () => loadGame());
+
+    const configFromMenuBtn = document.getElementById('configFromMenuBtn');
+    if (configFromMenuBtn) configFromMenuBtn.addEventListener('click', () => showScreen('configScreen'));
+
+    const titleFromMenuBtn = document.getElementById('titleFromMenuBtn');
+    if (titleFromMenuBtn) {
+        titleFromMenuBtn.addEventListener('click', () => {
+            if (confirm('タイトルに戻りますか？')) showScreen('titleScreen');
+        });
+    }
 
     // キーボード操作
     document.addEventListener('keydown', handleKeyboard);
@@ -237,9 +291,15 @@ function loadScene(sceneId) {
 
 // 背景変更
 function changeBackground(imagePath) {
+    if (!elements.background) return;
     elements.background.classList.add('fade-out');
     setTimeout(() => {
-        elements.background.src = imagePath;
+        // div要素に背景画像を設定
+        if (elements.background.tagName === 'IMG') {
+            elements.background.src = imagePath;
+        } else {
+            elements.background.style.backgroundImage = `url(${imagePath})`;
+        }
         elements.background.classList.remove('fade-out');
         elements.background.classList.add('fade-in');
     }, 500);
