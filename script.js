@@ -93,6 +93,21 @@ const gameScenarios = {
             { text: "街道を行く", next: 8, morality: 1 }
         ]
     },
+    3: { // 他の方法を探す
+        background: "cottage",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "村中を駆け回り、薬師や神父に助けを求めた。",
+            "だが誰もアルを救う術を知らなかった。",
+            "時間だけが無情に過ぎていく。",
+            "私は覚悟を決めるしかない。"
+        ],
+        choices: [
+            { text: "魔王城へ向かう", next: 2, morality: 0 },
+            { text: "アルのそばに残る", next: 24, morality: -2 }
+        ]
+    },
     7: { // 森の小道
         background: "forest",
         character: "sera",
@@ -267,20 +282,33 @@ const gameScenarios = {
             { text: "自分を許す", next: 23, morality: 1 }
         ]
     },
-    22: { // 真の救済エンド
-        background: "light",
-        character: "mina",
-        speaker: "本物のミーナ",
+      22: { // 真の救済エンド
+          background: "light",
+          character: "mina",
+          speaker: "本物のミーナ",
+          lines: [
+              "お母さん...ありがとう。",
+              "私はもう大丈夫。弟を守って。",
+              "これは私からの最後の贈り物。",
+              "愛は時を超えて、すべてを癒すのね。"
+          ],
+          isEnding: true,
+          endingType: "perfect"
+      },
+    24: { // バッドエンド3: 諦め
+        background: "cottage",
+        character: "sera",
+        speaker: "セラ",
         lines: [
-            "お母さん...ありがとう。",
-            "私はもう大丈夫。弟を守って。",
-            "これは私からの最後の贈り物。",
-            "愛は時を超えて、すべてを癒すのね。"
+            "私はアルのそばに残った。",
+            "薬草を求める時間はもう残されていない。",
+            "彼の体温は静かに失われていった。",
+            "私の祈りは届かなかった。"
         ],
         isEnding: true,
-        endingType: "perfect"
+        endingType: "bad"
     }
-};
+  };
 
 // ゲームクラス
 class DemonCastleGame {
