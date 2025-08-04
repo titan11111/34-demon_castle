@@ -93,6 +93,21 @@ const gameScenarios = {
             { text: "街道を行く", next: 8, morality: 1 }
         ]
     },
+    7: { // 森の小道
+        background: "forest",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "森は静まり返り、遠くでフクロウの声が聞こえる。",
+            "ふと足元で倒れた鹿を見つけた。",
+            "息も絶え絶えのその目が、助けを求めている。",
+            "時間はないけれど、見捨てるわけにはいかない。"
+        ],
+        choices: [
+            { text: "鹿を介抱する", next: 15, morality: 1 },
+            { text: "城へ急ぐ", next: 4, morality: 0 }
+        ]
+    },
     4: { // 正面突破
         background: "castle_gate",
         character: "sera",
@@ -164,6 +179,20 @@ const gameScenarios = {
         ],
         isEnding: true,
         endingType: "bad"
+    },
+    15: { // 森の恩恵
+        background: "forest",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "私は鹿の傷に手持ちの薬草を巻いた。",
+            "すると森の奥から柔らかな光が現れた。",
+            "『勇敢な者よ、感謝する』と声が響く。",
+            "光は城への近道を照らし出した。"
+        ],
+        choices: [
+            { text: "光の導きに従う", next: 4, morality: 0 }
+        ]
     },
     12: { // 条件を聞く
         background: "altar",
