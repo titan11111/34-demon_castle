@@ -395,19 +395,32 @@ class DemonCastleGame {
 
     updateBackground(backgroundType) {
         const svg = this.gameBackground.querySelector('.scene-bg');
-        const rect = svg.querySelector('rect');
-        
+        const rect = svg.querySelector('#backgroundColor');
+        const img = svg.querySelector('#backgroundImage');
+
+        // デフォルトでは画像を非表示
+        img.style.display = 'none';
+        img.removeAttribute('href');
+
         switch(backgroundType) {
             case 'cottage':
+                img.setAttribute('href', './images/sick.png');
+                img.style.display = 'block';
                 rect.setAttribute('fill', '#2d1f0f');
                 break;
             case 'forest':
+                img.setAttribute('href', './images/forest.png');
+                img.style.display = 'block';
                 rect.setAttribute('fill', '#0f2d0f');
                 break;
             case 'castle_gate':
+                img.setAttribute('href', './images/maou.png');
+                img.style.display = 'block';
                 rect.setAttribute('fill', '#2d1b3d');
                 break;
             case 'throne_room':
+                img.setAttribute('href', './images/palece.png');
+                img.style.display = 'block';
                 rect.setAttribute('fill', '#1a0033');
                 break;
             case 'altar':
