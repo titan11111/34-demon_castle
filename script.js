@@ -136,10 +136,23 @@ const gameScenarios = {
         ],
         choices: [
             { text: "受け入れる", next: 14, morality: -2 },
-            { text: "やっぱり断る", next: 15, morality: 1 }
+            { text: "やっぱり断る", next: 13, morality: 1 }
         ]
     },
-    14: { // バッドエンド1
+    13: { // バッドエンド1: 取引を拒否
+        background: "cottage",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "私は影の取引を拒んだ。",
+            "薬草は手に入らなかった。",
+            "家に戻ると、アルの体は冷たくなっていた。",
+            "私の選択が、すべてを終わらせた。"
+        ],
+        isEnding: true,
+        endingType: "bad",
+    },
+    14: { // バッドエンド2
         background: "cottage",
         character: "sera",
         speaker: "セラ",
