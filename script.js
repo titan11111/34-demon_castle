@@ -274,7 +274,6 @@ class DemonCastleGame {
         
         // ゲーム要素
         this.gameBackground = document.getElementById('gameBackground');
-        this.characterSprite = document.getElementById('characterSprite');
         this.textWindow = document.getElementById('textWindow');
         this.speakerName = document.getElementById('speakerName');
         this.gameText = document.getElementById('gameText');
@@ -375,9 +374,6 @@ class DemonCastleGame {
         // 背景を更新
         this.updateBackground(this.currentScenario.background);
         
-        // キャラクターを更新
-        this.updateCharacter(this.currentScenario.character);
-        
         // 話者名を更新
         this.speakerName.textContent = this.currentScenario.speaker;
         
@@ -437,26 +433,6 @@ class DemonCastleGame {
                 break;
             default:
                 rect.setAttribute('fill', '#2d1b3d');
-        }
-    }
-
-    updateCharacter(characterType) {
-        const sprite = this.characterSprite.querySelector('svg');
-        
-        // キャラクター切り替え（簡易版）
-        switch(characterType) {
-            case 'sera':
-                sprite.style.display = 'block';
-                break;
-            case 'shadow':
-                sprite.style.filter = 'brightness(0.3) contrast(2)';
-                break;
-            case 'mina':
-                sprite.style.filter = 'brightness(1.2) sepia(0.5)';
-                break;
-            default:
-                sprite.style.display = 'block';
-                sprite.style.filter = 'none';
         }
     }
 

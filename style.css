@@ -144,20 +144,6 @@ body {
     object-fit: cover;
 }
 
-.character-sprite {
-    position: absolute;
-    right: 5%;
-    bottom: 30%;
-    z-index: 2;
-    transition: all 0.5s ease;
-}
-
-.character-sprite svg {
-    width: clamp(150px, 20vw, 250px);
-    height: auto;
-    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
-}
-
 /* テキストウィンドウ */
 .text-window {
     position: absolute;
@@ -356,11 +342,6 @@ body {
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
-    .character-sprite {
-        right: 2%;
-        bottom: 35%;
-    }
-    
     .text-window {
         height: 40%;
         padding: 1rem;
@@ -388,11 +369,6 @@ body {
     
     .text-window {
         height: 45%;
-    }
-    
-    .character-sprite {
-        right: 0;
-        bottom: 45%;
     }
 }
 
