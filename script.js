@@ -414,12 +414,12 @@ class DemonCastleGame {
                 rect.setAttribute('fill', '#0f2d0f');
                 break;
             case 'castle_gate':
-                img.setAttribute('href', './images/maou.png');
+                img.setAttribute('href', './images/palece.png');
                 img.style.display = 'block';
                 rect.setAttribute('fill', '#2d1b3d');
                 break;
             case 'throne_room':
-                img.setAttribute('href', './images/palece.png');
+                img.setAttribute('href', './images/maou.png');
                 img.style.display = 'block';
                 rect.setAttribute('fill', '#1a0033');
                 break;
