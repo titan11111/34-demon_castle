@@ -123,6 +123,19 @@ const gameScenarios = {
             { text: "城へ急ぐ", next: 4, morality: 0 }
         ]
     },
+    8: { // 街道
+        background: "forest",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "街道は月光に照らされ、まっすぐ城へと伸びている。",
+            "静かな夜風が、心細さを少しだけ和らげた。",
+            "やがて遠くに魔王城の塔が見えてきた。"
+        ],
+        choices: [
+            { text: "正面から堂々と入る", next: 4, morality: 1 }
+        ]
+    },
     4: { // 正面突破
         background: "castle_gate",
         character: "sera",
