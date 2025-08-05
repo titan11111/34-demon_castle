@@ -223,7 +223,7 @@ const gameScenarios = {
         ]
     },
     12: { // 条件を聞く
-        background: "altar",
+        background: "mina",
         character: "mina",
         speaker: "ミーナ",
         lines: [
@@ -238,7 +238,7 @@ const gameScenarios = {
         ]
     },
     16: { // トゥルーエンド
-        background: "sunrise",
+        background: "mina_spirit",
         character: "sera",
         speaker: "セラ",
         lines: [
@@ -577,6 +577,21 @@ class DemonCastleGame {
                 img.setAttribute('href', './images/maou.png');
                 img.style.display = 'block';
                 rect.setAttribute('fill', '#1a0033');
+                break;
+            case 'dungeon':
+                img.setAttribute('href', './images/rouya.png');
+                img.style.display = 'block';
+                rect.setAttribute('fill', '#0a0a0a');
+                break;
+            case 'mina':
+                img.setAttribute('href', './images/mina.png');
+                img.style.display = 'block';
+                rect.setAttribute('fill', '#330011');
+                break;
+            case 'mina_spirit':
+                img.setAttribute('href', './images/minatenn.png');
+                img.style.display = 'block';
+                rect.setAttribute('fill', '#ff6b4a');
                 break;
             case 'altar':
                 rect.setAttribute('fill', '#330011');
