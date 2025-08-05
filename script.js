@@ -419,7 +419,12 @@ class DemonCastleGame {
         this.currentScenario = null;
         this.textSpeed = 50; // ミリ秒
         this.isAutoMode = false;
-        
+
+        // BGM プレイヤー設定
+        this.bgmPlayer = new Audio();
+        this.bgmPlayer.loop = true;
+        this.currentBGM = '';
+
         this.initializeElements();
         this.bindEvents();
         this.showTitleScreen();
@@ -749,10 +754,26 @@ class DemonCastleGame {
         this.state = new GameState(); // リセット
     }
 
-    // サウンド関連（実際の音声ファイルがない場合のダミー）
+    // サウンド関連
     playBGM(bgmType) {
-        console.log(`Playing BGM: ${bgmType}`);
-        // 実際の実装では音声ファイルを再生
+        const bgmMap = {
+            title: './audio/casle.mp3',
+            game: './audio/casle.mp3'
+        };
+
+        const src = bgmMap[bgmType];
+        if (!src) return;
+
+        if (this.currentBGM === src) return;
+
+        try {
+            this.bgmPlayer.pause();
+            this.bgmPlayer.src = src;
+            this.bgmPlayer.play().catch(err => console.error('BGM play failed:', err));
+            this.currentBGM = src;
+        } catch (e) {
+            console.error('BGM error:', e);
+        }
     }
 
     playSE(seType) {
