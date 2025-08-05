@@ -424,6 +424,9 @@ class DemonCastleGame {
         this.bgmPlayer = new Audio();
         this.bgmPlayer.loop = true;
         this.currentBGM = '';
+        this.isMuted = false;
+        this.volumeOnIcon = `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z" fill="currentColor"/><path d="M16 7a5 5 0 010 10" stroke="currentColor" stroke-width="2" fill="none"/></svg>`;
+        this.volumeOffIcon = `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z" fill="currentColor"/><path d="M16 7l5 5-5 5M21 7l-5 5 5 5" stroke="currentColor" stroke-width="2" fill="none"/></svg>`;
 
         this.initializeElements();
         this.bindEvents();
@@ -448,10 +451,15 @@ class DemonCastleGame {
         this.startBtn = document.getElementById('startBtn');
         this.menuBtn = document.getElementById('menuBtn');
         this.saveBtn = document.getElementById('saveBtn');
+        this.musicBtn = document.getElementById('musicBtn');
         this.resumeBtn = document.getElementById('resumeBtn');
         this.saveGameBtn = document.getElementById('saveGameBtn');
         this.loadGameBtn = document.getElementById('loadGameBtn');
         this.titleBtn = document.getElementById('titleBtn');
+
+        if (this.musicBtn) {
+            this.musicBtn.innerHTML = this.volumeOnIcon;
+        }
     }
 
     bindEvents() {
@@ -462,6 +470,9 @@ class DemonCastleGame {
         this.nextButton.addEventListener('click', () => this.nextLine());
         this.menuBtn.addEventListener('click', () => this.showMenu());
         this.saveBtn.addEventListener('click', () => this.quickSave());
+        if (this.musicBtn) {
+            this.musicBtn.addEventListener('click', () => this.toggleMusic());
+        }
         
         // メニュー
         this.resumeBtn.addEventListener('click', () => this.hideMenu());
@@ -757,8 +768,8 @@ class DemonCastleGame {
     // サウンド関連
     playBGM(bgmType) {
         const bgmMap = {
-            title: './audio/casle.mp3',
-            game: './audio/casle.mp3'
+            title: './audio/Dust_city.mp3',
+            game: './audio/Songs_of_the_Soulless.mp3'
         };
 
         const src = bgmMap[bgmType];
@@ -769,10 +780,19 @@ class DemonCastleGame {
         try {
             this.bgmPlayer.pause();
             this.bgmPlayer.src = src;
+            this.bgmPlayer.muted = this.isMuted;
             this.bgmPlayer.play().catch(err => console.error('BGM play failed:', err));
             this.currentBGM = src;
         } catch (e) {
             console.error('BGM error:', e);
+        }
+    }
+
+    toggleMusic() {
+        this.isMuted = !this.isMuted;
+        this.bgmPlayer.muted = this.isMuted;
+        if (this.musicBtn) {
+            this.musicBtn.innerHTML = this.isMuted ? this.volumeOffIcon : this.volumeOnIcon;
         }
     }
 
