@@ -306,9 +306,98 @@ const gameScenarios = {
               "愛は時を超えて、すべてを癒すのね。"
           ],
           isEnding: true,
-          endingType: "perfect"
-      },
-    24: { // バッドエンド3: 諦め
+            endingType: "perfect"
+        },
+    5: { // 裏口ルート
+        background: "castle_gate",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "城の裏手に回り込んだ。",
+            "古い扉が半開きになっている。",
+            "誰かが通った形跡がある...",
+            "静かに中に入ろう。"
+        ],
+        choices: [
+            { text: "慎重に進む", next: 9, morality: 0 },
+            { text: "急いで進む", next: 4, morality: -1 }
+        ]
+    },
+    6: { // 様子見ルート
+        background: "forest",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "茂みに隠れて城の様子を窺った。",
+            "城からは不気味な光が漏れている。",
+            "でも時間が経つほど、アルが...",
+            "もう躊躇している場合ではない。"
+        ],
+        choices: [
+            { text: "正面から入る", next: 4, morality: 0 },
+            { text: "裏口を探す", next: 5, morality: 1 }
+        ]
+    },
+    10: { // 地下ルート
+        background: "dungeon",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "地下は湿っぽく、鎖の音が響いている。",
+            "牢屋がいくつも並んでいる。",
+            "その奥で、小さな影が動いた。",
+            "「助けて...」か細い声が聞こえる。"
+        ],
+        choices: [
+            { text: "声の主を助ける", next: 12, morality: 2 },
+            { text: "薬草を探しに行く", next: 9, morality: -1 }
+        ]
+    },
+    19: { // 幻想を受け入れる
+        background: "altar",
+        character: "shadow",
+        speaker: "影",
+        lines: [
+            "賢い選択だ...真実など苦痛でしかない。",
+            "この美しい幻想の中で生きればいい。",
+            "薬草をやろう。息子は救える。",
+            "だが君は...永遠にここに留まるのだ。"
+        ],
+        choices: [
+            { text: "受け入れる", next: 14, morality: -2 },
+            { text: "やっぱり断る", next: 18, morality: 1 }
+        ]
+    },
+    21: { // 記憶から立ち去る
+        background: "castle_gate",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "過去を振り返るのはやめよう。",
+            "今は息子を救うことだけを考えなければ。",
+            "城を出て、別の方法を探そう。",
+            "でも...本当にそれでいいのだろうか？"
+        ],
+        choices: [
+            { text: "村に戻る", next: 24, morality: -1 },
+            { text: "もう一度城に入る", next: 9, morality: 0 }
+        ]
+    },
+    23: { // 自分を許すルート
+        background: "memory_maze",
+        character: "sera",
+        speaker: "セラ",
+        lines: [
+            "そうだ...私も人間。完璧ではない。",
+            "ミーナを失ったのは事故だった。",
+            "今度こそ、アルを守り抜こう。",
+            "薬草は...そこにある。"
+        ],
+        choices: [
+            { text: "薬草を取る", next: 16, morality: 1 }
+        ]
+    },
+      24: { // バッドエンド3: 諦め
         background: "cottage",
         character: "sera",
         speaker: "セラ",
