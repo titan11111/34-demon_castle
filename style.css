@@ -15,6 +15,10 @@ body {
     -webkit-touch-callout: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* 画面共通 */
 .screen {
     position: fixed;

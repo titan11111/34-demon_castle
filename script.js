@@ -412,11 +412,27 @@ const gameScenarios = {
     }
   };
 
+const maouScenarios = {
+    0: {
+        background: "throne_room",
+        character: "maou",
+        speaker: "魔王",
+        lines: [
+            "アルが倒れて三日が過ぎた...",
+            "闇の力でも癒せぬ病に、私はただ祈ることしかできない。",
+            "セラよ、どうか薬草を見つけてアルを救ってくれ。"
+        ],
+        isEnding: true,
+        endingType: "maou"
+    }
+};
+
 // ゲームクラス
 class DemonCastleGame {
     constructor() {
         this.state = new GameState();
         this.currentScenario = null;
+        this.scenarios = gameScenarios;
         this.textSpeed = 50; // ミリ秒
         this.isAutoMode = false;
 
@@ -449,6 +465,7 @@ class DemonCastleGame {
         
         // ボタン
         this.startBtn = document.getElementById('startBtn');
+        this.maouBtn = document.getElementById('maouBtn');
         this.menuBtn = document.getElementById('menuBtn');
         this.saveBtn = document.getElementById('saveBtn');
         this.musicBtn = document.getElementById('musicBtn');
@@ -465,6 +482,9 @@ class DemonCastleGame {
     bindEvents() {
         // タイトル画面
         this.startBtn.addEventListener('click', () => this.startGame());
+        if (this.maouBtn) {
+            this.maouBtn.addEventListener('click', () => this.startMaouGame());
+        }
         
         // ゲーム操作
         this.nextButton.addEventListener('click', () => this.nextLine());
@@ -519,11 +539,27 @@ class DemonCastleGame {
         this.hideAllScreens();
         this.titleScreen.classList.add('active');
         this.playBGM('title');
+        if (localStorage.getItem('maouUnlocked')) {
+            this.maouBtn.classList.remove('hidden');
+        } else {
+            this.maouBtn.classList.add('hidden');
+        }
     }
 
     startGame() {
         this.hideAllScreens();
         this.gameScreen.classList.add('active');
+        this.scenarios = gameScenarios;
+        this.state.currentScene = 0;
+        this.state.currentLine = 0;
+        this.loadScene(0);
+        this.playBGM('game');
+    }
+
+    startMaouGame() {
+        this.hideAllScreens();
+        this.gameScreen.classList.add('active');
+        this.scenarios = maouScenarios;
         this.state.currentScene = 0;
         this.state.currentLine = 0;
         this.loadScene(0);
@@ -537,7 +573,7 @@ class DemonCastleGame {
     }
 
     loadScene(sceneId) {
-        this.currentScenario = gameScenarios[sceneId];
+        this.currentScenario = this.scenarios[sceneId];
         if (!this.currentScenario) {
             console.error('Scene not found:', sceneId);
             return;
@@ -727,9 +763,15 @@ class DemonCastleGame {
             case 'perfect':
                 endingMessage = 'パーフェクトエンド：真の救済';
                 break;
+            case 'maou':
+                endingMessage = '魔王編エンド：父の祈り';
+                break;
         }
-        
+
         setTimeout(() => {
+            if (endingType !== 'maou') {
+                localStorage.setItem('maouUnlocked', 'true');
+            }
             alert(`${endingMessage}\n\nゲームクリア！\n道徳値: ${this.state.gameFlags.morality}`);
             this.returnToTitle();
         }, 2000);
