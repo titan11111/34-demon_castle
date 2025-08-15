@@ -557,6 +557,12 @@ class DemonCastleGame {
     }
 
     startMaouGame() {
+        // 魔王編は本編クリア後に解放
+        if (!localStorage.getItem('maouUnlocked')) {
+            alert('魔王編はストーリーを1回クリアすると解放されます。');
+            return;
+        }
+
         this.hideAllScreens();
         this.gameScreen.classList.add('active');
         this.scenarios = maouScenarios;
